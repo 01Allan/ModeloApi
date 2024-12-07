@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.models.loader import load_model
 
 router = APIRouter()
-model = load_model("modelo_random_forest.pkl")
+model = load_model("models/modeloRandomForest.pkl")
 
 @router.get("/")
 def get_model_stats():
