@@ -4,7 +4,7 @@ from app.schemas.input_schema import PredictionInput
 from app.services.predictor import make_prediction
 
 router = APIRouter()
-model = load_model("proyectoFinal/app/models/modelo_random_forest.pkl")
+model = load_model("../proyectoFinal/app/models/modelo_random_forest.pkl")
 
 @router.post("/")
 def predict(input_data: PredictionInput):
