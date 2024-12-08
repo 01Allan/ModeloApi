@@ -7,9 +7,12 @@ router = APIRouter()
 model = load_model("models/modeloRandomForest.pkl")
 
 @router.post("/")
-def predict(input_data: PredictionInput):
+def predict(input_data: list[PredictionInput]):
     try:
-        result = make_prediction(model, input_data)
-        return {"received_data": input_data.dict(), **result}
+        results = []
+        for data in input_data:
+            prediction = make_prediction(model, data)
+            results.append({"received_data": data.dict(), **prediction})
+        return {"predictions": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error durante la predicción: {str(e)}")
