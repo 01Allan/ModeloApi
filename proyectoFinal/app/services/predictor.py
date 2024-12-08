@@ -12,6 +12,7 @@ def make_prediction(model, input_data):
         if missing_fields:
             raise ValueError(f"Faltan campos requeridos en input_data: {missing_fields}")
 
+        # Crear un DataFrame con nombres de columnas
         input_features = pd.DataFrame([{
             "Age": input_data.Age,
             "Gender": input_data.Gender,
@@ -22,6 +23,9 @@ def make_prediction(model, input_data):
             "Last_Interaction": input_data.Last_Interaction
         }])
 
+        print("Características de entrada para el modelo:", input_features)
+
+        # Generar predicción
         prediction = model.predict(input_features)[0]
         probability = model.predict_proba(input_features)[0].tolist()
 
