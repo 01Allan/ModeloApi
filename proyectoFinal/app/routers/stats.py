@@ -16,10 +16,10 @@ def get_model_stats():
 
     return {
         "metrics": {
-            "Precision": 0.9982,
-            "Recall": 0.9716,
-            "F1": 0.9847,
-            "Roc_Auc": 0.9864
+            "Precision": 0.9997,
+            "Recall": 0.9953,
+            "F1": 0.9975,
+            "Roc_Auc": 0.9999
         },
         "features_importance": sorted(importance_dict, key=lambda x: x["importance"], reverse=True)
     }
