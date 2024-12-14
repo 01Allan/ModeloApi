@@ -15,10 +15,11 @@ def normalize_data(data):
 
 def make_prediction(model, input_data):
     try:
-        
+        # Convertir datos de entrada a diccionario si no lo son
         if not isinstance(input_data, dict):
             input_data = input_data.dict()
 
+        # Definir todas las características requeridas por el modelo
         required_features = [
             "Age", "Tenure", "Usage_Frequency", 
             "Support_Calls", "Payment_Delay", 
@@ -26,9 +27,11 @@ def make_prediction(model, input_data):
             "Contract_Length", "Gender", "Subscription_Type"
         ]
 
+        # Extraer datos según las características requeridas
         input_features = {key: input_data[key] for key in required_features}
         input_df = pd.DataFrame([input_features])
 
+        # Renombrar columnas para que coincidan con las usadas en el modelo
         column_mapping = {
             "Last_Interaction": "Last Interaction",
             "Payment_Delay": "Payment Delay",
@@ -41,8 +44,12 @@ def make_prediction(model, input_data):
         }
         input_df.rename(columns=column_mapping, inplace=True)
 
+        missing_columns = [col for col in column_mapping.values() if col not in input_df.columns]
+        if missing_columns:
+            raise ValueError(f"Faltan columnas requeridas en el DataFrame: {missing_columns}")
+
         numeric_features = [
-            "Age", "Tenure", "Usage_Frequency", 
+            "Age", "Tenure", "Usage Frequency", 
             "Support Calls", "Payment Delay", 
             "Total Spend", "Last Interaction"
         ]
@@ -58,7 +65,7 @@ def make_prediction(model, input_data):
         db_data = {
             **input_data,
             "Churn": int(prediction), 
-            "Probability": probability[prediction] 
+            "Probability": probability[prediction]  
         }
 
         save_prediction_to_db(db_data)
