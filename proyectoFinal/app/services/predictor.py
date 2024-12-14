@@ -19,14 +19,15 @@ def make_prediction(model, input_data):
         if not isinstance(input_data, dict):
             input_data = input_data.dict()
 
-        numeric_features = [
+        required_features = [
             "Age", "Tenure", "Usage_Frequency", 
             "Support_Calls", "Payment_Delay", 
-            "Total_Spend", "Last_Interaction"
+            "Total_Spend", "Last_Interaction",
+            "Contract_Length", "Gender", "Subscription_Type"
         ]
 
-        numeric_data = {key: input_data[key] for key in numeric_features}
-        numeric_df = pd.DataFrame([numeric_data])
+        input_features = {key: input_data[key] for key in required_features}
+        input_df = pd.DataFrame([input_features])
 
         column_mapping = {
             "Last_Interaction": "Last Interaction",
@@ -38,18 +39,26 @@ def make_prediction(model, input_data):
             "Gender": "Gender",
             "Subscription_Type": "Subscription Type"
         }
-        numeric_df.rename(columns=column_mapping, inplace=True)
+        input_df.rename(columns=column_mapping, inplace=True)
 
-        normalized_data = normalize_data(numeric_df)
-        normalized_df = pd.DataFrame(normalized_data, columns=numeric_df.columns)
+        numeric_features = [
+            "Age", "Tenure", "Usage_Frequency", 
+            "Support Calls", "Payment Delay", 
+            "Total Spend", "Last Interaction"
+        ]
+        normalized_data = normalize_data(input_df[numeric_features])
+        normalized_df = pd.DataFrame(normalized_data, columns=numeric_features)
+
+        for col in ["Contract Length", "Gender", "Subscription Type"]:
+            normalized_df[col] = input_df[col].values
 
         prediction = model.predict(normalized_df)[0]
         probability = model.predict_proba(normalized_df)[0].tolist()
 
         db_data = {
-            **input_data, 
-            "Churn": int(prediction),  
-            "Probability": probability[prediction]  
+            **input_data,
+            "Churn": int(prediction), 
+            "Probability": probability[prediction] 
         }
 
         save_prediction_to_db(db_data)
