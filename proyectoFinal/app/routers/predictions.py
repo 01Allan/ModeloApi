@@ -11,16 +11,18 @@ model = load_model("models/modeloDecisionTree.pkl")
 @router.post("/")
 async def predict(input_data: list[PredictionInput]):
     try:
+        data_as_dicts = [item.dict() for item in input_data]
+
         logger.info("Guardando datos recibidos en la base de datos...")
-        save_data_to_db(input_data)
+        save_data_to_db(data_as_dicts)
 
         logger.info("Procesando predicciones...")
         predictions = process_and_predict(model)
 
         return {
             "status": "success",
-            "data_sent": input_data,  
-            "predictions": predictions  
+            "data_sent": data_as_dicts, 
+            "predictions": predictions 
         }
 
     except Exception as e:

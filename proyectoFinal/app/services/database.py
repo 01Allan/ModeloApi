@@ -19,12 +19,6 @@ def save_data_to_db(data):
             Support_Calls, Payment_Delay, Subscription_Type,
             Contract_Length, Total_Spend, Last_Interaction
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE 
-            Age=VALUES(Age), Gender=VALUES(Gender), Tenure=VALUES(Tenure),
-            Usage_Frequency=VALUES(Usage_Frequency), Support_Calls=VALUES(Support_Calls),
-            Payment_Delay=VALUES(Payment_Delay), Subscription_Type=VALUES(Subscription_Type),
-            Contract_Length=VALUES(Contract_Length), Total_Spend=VALUES(Total_Spend),
-            Last_Interaction=VALUES(Last_Interaction)
         """
         for record in data:
             values = (
@@ -36,10 +30,10 @@ def save_data_to_db(data):
             cursor.execute(insert_query, values)
 
         connection.commit()
-        logger.info("Datos guardados exitosamente en la base de datos.")
+        logger.info("Datos guardados exitosamente.")
     except Exception as e:
-        logger.error(f"Error al guardar datos en la base de datos: {e}")
-        raise RuntimeError(f"Error al guardar datos en la base de datos: {e}")
+        logger.error(f"Error al guardar en la base de datos: {e}")
+        raise RuntimeError(f"Error al guardar en la base de datos: {e}")
     finally:
         if connection.is_connected():
             cursor.close()
