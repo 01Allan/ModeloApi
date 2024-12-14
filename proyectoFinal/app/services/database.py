@@ -83,7 +83,7 @@ def save_predictions_to_db(predictions):
         """
         for prediction in predictions:
             values = (
-                prediction["CustomerID"], prediction["Churn"], prediction["Probability"]
+                prediction["CustomerID"], prediction["Churn"]#, prediction["Probability"]
             )
             cursor.execute(insert_query, values)
 
