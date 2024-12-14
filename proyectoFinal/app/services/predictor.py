@@ -1,53 +1,50 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from app.services.database import save_prediction_to_db
+
+def normalize_data(input_data):
+    """
+    Normalización de datos: Logarítmica seguida de Z-Score.
+    """
+    log_transformed = np.log1p(input_data)
+    scaler = StandardScaler()
+    normalized = scaler.fit_transform(log_transformed)
+    return normalized
 
 def make_prediction(model, input_data):
     try:
         if not isinstance(input_data, dict):
             input_data = input_data.dict()
 
-        required_fields = [
-            "Age", "Gender", "Support_Calls", 
-            "Payment_Delay", "Subscription_Type", 
+        numeric_features = [
+            "Age", "Tenure", "Usage_Frequency", 
+            "Support_Calls", "Payment_Delay", 
             "Total_Spend", "Last_Interaction"
         ]
-        missing_fields = [field for field in required_fields if field not in input_data]
-        if missing_fields:
-            raise ValueError(f"Faltan campos requeridos en input_data: {missing_fields}")
+        numeric_data = {key: input_data[key] for key in numeric_features}
 
-        column_mapping = {
-            "Age": "Age",
-            "Gender": "Gender",
-            "Support_Calls": "Support Calls",
-            "Payment_Delay": "Payment Delay",
-            "Subscription_Type": "Subscription Type",
-            "Total_Spend": "Total Spend",
-            "Last_Interaction": "Last Interaction"
+        original_df = pd.DataFrame([numeric_data])
+
+        normalized_data = normalize_data(original_df)
+
+        normalized_df = pd.DataFrame(normalized_data, columns=numeric_features)
+
+        prediction = model.predict(normalized_df)[0]
+        probability = model.predict_proba(normalized_df)[0].tolist()
+
+        db_data = {
+            "CustomerID": input_data["CustomerID"],
+            **numeric_data, 
+            "Churn": int(prediction),
+            "Probability": probability[prediction]
         }
-
-        input_features = pd.DataFrame([{
-            column_mapping["Age"]: input_data["Age"],
-            column_mapping["Gender"]: input_data["Gender"],
-            column_mapping["Support_Calls"]: input_data["Support_Calls"],
-            column_mapping["Payment_Delay"]: input_data["Payment_Delay"],
-            column_mapping["Subscription_Type"]: input_data["Subscription_Type"],
-            column_mapping["Total_Spend"]: input_data["Total_Spend"],
-            column_mapping["Last_Interaction"]: input_data["Last_Interaction"]
-        }])
-
-        print("Características de entrada para el modelo:", input_features)
-
-        try:
-            prediction = model.predict(input_features)[0]
-            probability = model.predict_proba(input_features)[0].tolist()
-        except Exception as e:
-            raise RuntimeError(f"Error en el modelo: {e}")
+        save_prediction_to_db(db_data)
 
         return {
             "prediction": int(prediction),
             "probability": probability,
             "interpretation": "Cliente en riesgo de desertar" if prediction == 1 else "Cliente leal"
         }
-    
     except Exception as e:
         raise RuntimeError(f"Error durante la predicción: {str(e)}")

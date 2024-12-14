@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 class PredictionInput(BaseModel):
+    CustomerID: str = Field(..., description="Identificador único del cliente.")
     Age: int = Field(..., ge=18, le=100, description="Edad del cliente, entre 18 y 100 años.")
     Gender: int = Field(..., ge=0, le=1, description="Género codificado (0: Femenino, 1: Masculino).")
     Tenure: float = Field(..., ge=1, description="Tiempo en la empresa (meses).")

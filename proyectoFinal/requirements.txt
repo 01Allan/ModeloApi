@@ -5,3 +5,5 @@ joblib
 numpy
 python-multipart
 pandas
+pymysql
+scipy
