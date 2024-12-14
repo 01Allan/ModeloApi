@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.models.loader import load_model
 
 router = APIRouter()
-model = load_model("models/modeloRandomForest.pkl")
+model = load_model("models/modeloDecisionTree.pkl")
 
 @router.get("/")
 def get_model_stats():
@@ -16,10 +16,10 @@ def get_model_stats():
 
     return {
         "metrics": {
-            "Precision": 0.9997,
-            "Recall": 0.9953,
-            "F1": 0.9975,
-            "Roc_Auc": 0.9999
+            "Precision": 0.9995,
+            "Recall": 0.9986,
+            "F1": 0.9990,
+            "Roc_Auc": 0.9992
         },
         "features_importance": sorted(importance_dict, key=lambda x: x["importance"], reverse=True)
     }
