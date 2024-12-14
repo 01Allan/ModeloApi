@@ -15,18 +15,9 @@ def normalize_data(data):
 
 def make_prediction(model, input_data):
     try:
+ 
         if not isinstance(input_data, dict):
             input_data = input_data.dict()
-
-        required_features = [
-            "Age", "Tenure", "Usage_Frequency", 
-            "Support_Calls", "Payment_Delay", 
-            "Total_Spend", "Last_Interaction",
-            "Contract_Length", "Gender", "Subscription_Type"
-        ]
-
-        input_features = {key: input_data[key] for key in required_features}
-        input_df = pd.DataFrame([input_features])
 
         column_mapping = {
             "Last_Interaction": "Last Interaction",
@@ -36,45 +27,38 @@ def make_prediction(model, input_data):
             "Usage_Frequency": "Usage Frequency",
             "Contract_Length": "Contract Length",
             "Gender": "Gender",
-            "Subscription_Type": "Subscription Type"
+            "Subscription_Type": "Subscription Type",
+            "Tenure": "Tenure",
+            "Age": "Age"
         }
+
+        input_features = {key: input_data[key] for key in column_mapping if key in input_data}
+        input_df = pd.DataFrame([input_features])
+
         input_df.rename(columns=column_mapping, inplace=True)
 
-        expected_order = [
-            "Age", "Tenure", "Usage Frequency", 
-            "Support Calls", "Payment Delay", 
-            "Total Spend", "Last Interaction",
-            "Contract Length", "Gender", "Subscription Type"
-        ]
-        missing_columns = [col for col in expected_order if col not in input_df.columns]
-        if missing_columns:
-            raise ValueError(f"Faltan columnas requeridas en el DataFrame: {missing_columns}")
+        required_features = list(model.feature_names_in_)
 
-        input_df = input_df[expected_order]
+        input_df = input_df[required_features]
 
         numeric_features = [
             "Age", "Tenure", "Usage Frequency", 
             "Support Calls", "Payment Delay", 
             "Total Spend", "Last Interaction"
         ]
-        normalized_data = normalize_data(input_df[numeric_features])
-        normalized_df = pd.DataFrame(normalized_data, columns=numeric_features)
+        if all(feature in input_df.columns for feature in numeric_features):
+            normalized_data = normalize_data(input_df[numeric_features])
+            input_df[numeric_features] = normalized_data
 
-        for col in ["Contract Length", "Gender", "Subscription Type"]:
-            normalized_df[col] = input_df[col].values
-
-        normalized_df = normalized_df[expected_order]
-
-        prediction = model.predict(normalized_df)[0]
-        probability = model.predict_proba(normalized_df)[0].tolist()
+        prediction = model.predict(input_df)[0]
+        probability = model.predict_proba(input_df)[0].tolist()
 
         db_data = {
-            **input_data,
-            "Churn": int(prediction),
-            "Probability": probability[prediction]
+            **input_data, 
+            "Churn": int(prediction), 
+            "Probability": probability[prediction] 
         }
 
-        # Guardar en la base de datos
         save_prediction_to_db(db_data)
         logger.info(f"Predicción realizada con éxito para CustomerID {input_data.get('CustomerID')}")
 
