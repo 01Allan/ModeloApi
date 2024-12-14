@@ -14,7 +14,7 @@ def save_data_to_db(data):
         cursor = connection.cursor()
 
         insert_query = """
-        INSERT INTO input_data (
+        INSERT INTO predictions (
             CustomerID, Age, Gender, Tenure, Usage_Frequency,
             Support_Calls, Payment_Delay, Subscription_Type,
             Contract_Length, Total_Spend, Last_Interaction
