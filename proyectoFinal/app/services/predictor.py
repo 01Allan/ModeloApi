@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelBinarizer, LabelEncoder
 from app.services.database import (
     fetch_data_from_db,
     save_predictions_to_db
@@ -116,11 +116,22 @@ def process_and_predict(model, input_data):
                 required_features = list(model.feature_names_in_)
                 input_df = input_df[required_features]
 
+                categoric = [
+                    "Gender", "Subscription Type",
+                    "Contract Length"
+                ]
+
+                encoder = LabelEncoder()
+
+                for columna in categoric:
+                    input_df[columna] = encoder.fit_transform(input_df[columna])
+
                 numeric_features = [
                     "Age", "Tenure", "Usage Frequency",
                     "Support Calls", "Payment Delay",
                     "Total Spend", "Last Interaction"
                 ]
+
                 if all(feature in input_df.columns for feature in numeric_features):
                     normalized_data = normalize_data(input_df[numeric_features])
                     input_df[numeric_features] = normalized_data
