@@ -3,12 +3,13 @@ from mysql.connector import Error
 from app.services.logger import logger
 
 def save_prediction_to_db(data):
+    connection = None 
     try:
         connection = mysql.connector.connect(
-            host="your_freesqldatabase_host",
-            user="your_username",
-            password="your_password",
-            database="your_database_name"
+            host="sql3.freesqldatabase.com",
+            user="sql3751784",
+            password="hF9MAPva8x",
+            database="sql3751784"
         )
         cursor = connection.cursor()
 
@@ -28,10 +29,10 @@ def save_prediction_to_db(data):
         cursor.execute(insert_query, values)
         connection.commit()
         logger.info(f"Datos guardados exitosamente en la base de datos para CustomerID: {data['CustomerID']}")
-    except Exception as e:
+    except Error as e:
         logger.error(f"Error al guardar en la base de datos: {e}")
         raise RuntimeError(f"Error al guardar en la base de datos: {e}")
     finally:
-        if connection.is_connected():
+        if connection and connection.is_connected():
             cursor.close()
             connection.close()
