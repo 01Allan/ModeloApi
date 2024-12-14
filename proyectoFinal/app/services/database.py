@@ -50,7 +50,7 @@ def fetch_data_from_db(batch_size=100):
         )
         cursor = connection.cursor(dictionary=True)
 
-        query = f"SELECT * FROM input_data LIMIT {batch_size}"
+        query = f"SELECT * FROM predictions LIMIT {batch_size}"
         cursor.execute(query)
         records = cursor.fetchall()
         logger.info(f"{len(records)} registros recuperados para predicción.")
