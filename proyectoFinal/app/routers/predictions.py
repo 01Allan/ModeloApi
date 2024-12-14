@@ -1,36 +1,28 @@
 from fastapi import APIRouter, HTTPException
 from app.models.loader import load_model
+from app.services.logger import logger
+from app.services.database import save_data_to_db
 from app.schemas.input_schema import PredictionInput
-from app.services.predictor import make_prediction
-from app.services.logger import logger  
+from app.services.predictor import process_and_predict
 
 router = APIRouter()
 model = load_model("models/modeloDecisionTree.pkl")
 
 @router.post("/")
-def predict(input_data: list[PredictionInput]):
-    """
-    Endpoint para realizar predicciones.
-    """
+async def predict(input_data: list[PredictionInput]):
     try:
-        logger.info("Datos recibidos para predicción: %s", input_data)
-        results = []
+        logger.info("Guardando datos recibidos en la base de datos...")
+        save_data_to_db(input_data)
 
-        for data in input_data:
-            try:
-                prediction = make_prediction(model, data)
-                results.append({
-                    "data_recibida": data.dict(),
-                    "Prediccion": prediction
-                })
-                logger.info("Predicción realizada para CustomerID: %s", data.CustomerID)
-            except Exception as e:
-                logger.error("Error al procesar CustomerID %s: %s", data.CustomerID, str(e))
-                raise HTTPException(status_code=500, detail=f"Error en la predicción para CustomerID {data.CustomerID}: {str(e)}")
+        logger.info("Procesando predicciones...")
+        predictions = process_and_predict(model)
 
-        logger.info("Predicciones completadas para el lote enviado.")
-        return {"predictions": results}
+        return {
+            "status": "success",
+            "data_sent": input_data,  
+            "predictions": predictions  
+        }
 
     except Exception as e:
-        logger.error("Error general durante la predicción: %s", str(e))
+        logger.error(f"Error general durante la predicción: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error durante la predicción: {str(e)}")
